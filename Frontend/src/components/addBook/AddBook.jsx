@@ -3,6 +3,7 @@ import { Button, Grid, Paper, Input, Typography } from '@mui/material';
 import { useDispatch } from 'react-redux'; // Importing useDispatch hook
 import { addBook } from '../../redux/bookSlice'; // Importing the addBook action
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 const AddBook = () => {
   const dispatch = useDispatch(); // Initializing useDispatch hook
@@ -14,6 +15,7 @@ const AddBook = () => {
   const [release_year, setRelease_year] = useState('');
   const [coverPhoto, setCoverPhoto] = useState('');
   const navigate = useNavigate();
+  const token = useSelector(state => state.auth.authToken); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,20 +25,15 @@ const AddBook = () => {
       author,
       release_year,
       category,
-      chapters: [
-        {
-          name: chapterName,
-          pages: chapterPages,
-        },
-      ],
       cover_photo: coverPhoto,
     };
 
     try {
-      const response = await fetch('https://todo-server-9bjp.onrender.com/books', {
+      const response = await fetch('http://localhost:3000/books/add', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
         },
         body: JSON.stringify(newBook),
       });
@@ -47,7 +44,7 @@ const AddBook = () => {
 
       // Book added successfully
       console.log('Book added successfully');
-      navigate('/');
+      navigate('/books');
 
       // Dispatching the addBook action with the new book data
       dispatch(addBook(newBook));
@@ -57,8 +54,6 @@ const AddBook = () => {
       setAuthor('');
       setRelease_year('');
       setCategory('');
-      setChapterName('');
-      setChapterPages('');
       setCoverPhoto('');
     } catch (error) {
       console.error('Error adding book:', error.message);
@@ -102,20 +97,7 @@ const AddBook = () => {
               onChange={(e) => setCategory(e.target.value)}
               style={{ marginBottom: '15px' }}
             />
-            <Input
-              placeholder="Chapter Name"
-              fullWidth
-              value={chapterName}
-              onChange={(e) => setChapterName(e.target.value)}
-              style={{ marginBottom: '15px' }}
-            />
-            <Input
-              placeholder="Chapter Pages"
-              fullWidth
-              value={chapterPages}
-              onChange={(e) => setChapterPages(e.target.value)}
-              style={{ marginBottom: '15px' }}
-            />
+ 
             <Input
               placeholder="Cover Photo URL"
               fullWidth

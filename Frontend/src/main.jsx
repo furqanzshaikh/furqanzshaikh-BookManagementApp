@@ -29,20 +29,24 @@ const router = createBrowserRouter([
     path: "/",
     element: <Layout />,
     children: [
-      { 
-        path: "books/:id", 
-        element: <ProtectedRoute><SingleBook /></ProtectedRoute> 
+      {
+        path: "books/:id",
+        element: <ProtectedRoute><SingleBook /></ProtectedRoute>
       },
       { path: "/", element: <Login /> },
-      { 
-        path: "/addbook", 
-        element: <ProtectedRoute><AddBook /></ProtectedRoute> 
+      {
+        path: "/addbook",
+        element: <ProtectedRoute><AddBook /></ProtectedRoute>
       },
-      { 
-        path: "/books/:id/edit", 
-        element: <ProtectedRoute><EditBook /></ProtectedRoute> 
+      {
+        path: "/books/edit/:id",
+        element: <ProtectedRoute><EditBook /></ProtectedRoute>
       },
-      { path: "/books", element:<Book /> },
+      {
+        path: "/books", element: <ProtectedRoute>
+          <Book />
+        </ProtectedRoute>
+      },
       { path: "*", element: <NotFound /> },
     ],
   },

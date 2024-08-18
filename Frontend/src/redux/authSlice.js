@@ -14,15 +14,15 @@ const authSlice = createSlice({
   reducers: {
     login(state, action) {
       state.isAuthenticated = true;
-      state.authToken = action.payload.authToken; // Access token from payload
-      localStorage.setItem('authToken', action.payload.authToken); // Store token in localStorage
+      state.authToken = action.payload.authToken; 
+      localStorage.setItem('authToken', action.payload.authToken); 
     },
     logout(state) {
       state.isAuthenticated = false;
       state.authToken = null;
-      localStorage.removeItem('authToken'); // Remove token from localStorage on logout
+      localStorage.removeItem('authToken'); 
     },
-    setSortOption: (state, action) => { // Define setSortOption action
+    setSortOption: (state, action) => { 
       state.sortOption = action.payload;
     },
   },

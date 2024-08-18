@@ -1,3 +1,4 @@
+// src/components/Login.js
 import React, { useState } from 'react';
 import { Box, Button, TextField, Typography } from '@mui/material';
 import axios from 'axios';
@@ -6,35 +7,33 @@ import { login } from '../../redux/authSlice';
 import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const dispatch = useDispatch(); // Initialize dispatch function
+  const [error, setError] = useState(null);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setError(null);
 
     try {
-      const response = await axios.post('https://reqres.in/api/login', {
-        email: username,
-        password: password,
+      const response = await axios.post('http://localhost:3000/login', {
+        email,
+        password,
       });
 
       console.log('Login successful:', response.data);
       localStorage.setItem('authToken', response.data.token);
 
-
-      // Dispatch the login action with user details
       dispatch(login({ authToken: response.data.token }));
 
-      // Redirect to the home page after successful login
       navigate('/books');
     } catch (error) {
-      console.error('Login failed:', error);
-      alert('Login failed:', error)
-      setPassword('')
-      setUsername('')
-      // Handle login error, such as displaying an error message to the user
+      console.error('Login failed:', error.response ? error.response.data : error.message);
+      setError('Invalid email or password.');
+      setPassword('');
+      setEmail('');
     }
   };
 
@@ -53,14 +52,15 @@ const Login = () => {
       <Typography variant="h4" gutterBottom>
         Login
       </Typography>
+      {error && <Typography color="error">{error}</Typography>}
       <Box sx={{ width: '300px', marginBottom: '20px' }}>
         <TextField
           required
           fullWidth
-          label="Username"
+          label="Email"
           variant="outlined"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
       </Box>
       <Box sx={{ width: '300px', marginBottom: '20px' }}>
@@ -74,7 +74,20 @@ const Login = () => {
           onChange={(e) => setPassword(e.target.value)}
         />
       </Box>
-      <Button type="submit" color='inherit'   sx={{ color: 'white', backgroundColor: '#000000',width:'23vw', '&:hover': { color: 'black', backgroundColor: 'white'} }} variant='outlined'>
+      <Button 
+        type="submit" 
+        color='inherit'   
+        sx={{ 
+          color: 'white', 
+          backgroundColor: '#000000',
+          width: '23vw', 
+          '&:hover': { 
+            color: 'black', 
+            backgroundColor: 'white' 
+          } 
+        }} 
+        variant='outlined'
+      >
         Login
       </Button>
     </Box>

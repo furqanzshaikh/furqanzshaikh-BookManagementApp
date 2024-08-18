@@ -3,44 +3,54 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Box, Typography, Card, CardContent, Button } from '@mui/material';
 import Loader from '../loader/Loader';
+import { useSelector } from 'react-redux';
 
 const SingleBook = () => {
-  const { id } = useParams(); // Get the id parameter from the URL
+  const { id } = useParams(); 
   const [book, setBook] = useState(null);
   const navigate = useNavigate();
-
+  const token = useSelector(state => state.auth.authToken); 
   useEffect(() => {
     const fetchBook = async () => {
       try {
-        const response = await axios.get(`https://todo-server-9bjp.onrender.com/books/${id}`);
-        setBook(response.data);
+        const response = await axios.get(`http://localhost:3000/books/${id}`,{
+         
+        });
+        setBook(response.data.singleBook);
       } catch (error) {
         console.error('Error fetching book:', error);
       }
     };
 
     fetchBook();
-
-    // Cleanup function
-    return () => {
-      // Cleanup code if needed
-    };
   }, [id]); // Add id as a dependency to re-fetch data when id changes
 
+  useEffect(() => {
+    if (book) {
+      console.log(book);
+    }
+  }, [book]); // Log book data after it has been fetched and set
+
   // Function to delete a book
-  const handleDelete = async (bookId) => {
+  const handleDelete = async () => { // No need to pass bookId, we can use id directly from useParams
+    console.log(id)
     try {
-      await axios.delete(`https://todo-server-9bjp.onrender.com/books/${bookId}`);
+      await axios.delete(`http://localhost:3000/books/delete/${id}`,{
+        headers: {
+          Authorization: `Bearer ${token}`
+      },
+      });
+      
       setBook(null); // Clear the book state after deletion
-      alert(`Deleted book ${bookId} successfully`);
-      navigate('/books');
+      alert(`Deleted book ${book.book_name} successfully`);
+      navigate('/books'); // Navigate to books list after deletion
     } catch (error) {
-      console.log(error);
+      console.log('Error deleting book:', error);
     }
   };
 
   return (
-    <Box p={3} mb={2}  textAlign="center" bgcolor="#f9f7f3">
+    <Box p={3} mb={2} textAlign="center" bgcolor="#f9f7f3">
       {book ? (
         <Card variant="outlined" sx={{ maxWidth: 600, margin: 'auto', padding: 3 }}>
           <CardContent>
@@ -56,15 +66,13 @@ const SingleBook = () => {
             <Typography variant="subtitle1" paragraph>
               Release: {book.release_year}
             </Typography>
-            <Typography variant="subtitle1" paragraph>
-              Number of Chapters: {book.no_of_chapters}
-            </Typography>
 
-            <Box textAlign="center" mt={2} >
+            <Box textAlign="center" mt={2}>
               <Button
                 component={Link}
-                to={`/books/${id}/edit`}
-                variant="outlined" sx={{
+                to={`/books/edit/${id}`}
+                variant="outlined"
+                sx={{
                   width: "30%",
                   borderRadius: "0px",
                   backgroundColor: "#000000",
@@ -72,21 +80,25 @@ const SingleBook = () => {
                   "&:hover": {
                     color: "black", // Set text color to black on hover
                   },
-                }} color="inherit"
-                >
+                }}
+                color="inherit"
+              >
                 Edit
               </Button>
               <Button
-              onClick={()=>handleDelete(book.id)}
-              variant="outlined" sx={{
-                width: "30%",
-                borderRadius: "0px",
-                backgroundColor: "#000000",
-                color: "white", // Set text color to white
-                "&:hover": {
-                  backgroundColor:'red' // Set text color to black on hover
-                },
-              }} color="inherit">
+                onClick={handleDelete}
+                variant="outlined"
+                sx={{
+                  width: "30%",
+                  borderRadius: "0px",
+                  backgroundColor: "#000000",
+                  color: "white", // Set text color to white
+                  "&:hover": {
+                    backgroundColor: 'red' // Set background color to red on hover
+                  },
+                }}
+                color="inherit"
+              >
                 Delete
               </Button>
             </Box>
