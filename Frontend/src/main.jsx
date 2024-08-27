@@ -1,30 +1,43 @@
+// src/index.js
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
 import "./App.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Book from "./components/books/Book";
-import SingleBook from "./components/singleBook/SingleBook";
-import EditBook from "./components/edit/EditBook";
-import Login from "./components/login/Login";
-import NotFound from "./NotFound";
-import { Provider, useSelector } from "react-redux"; // Import useSelector to access isAuthenticated state
+import { Provider, useSelector } from "react-redux"; 
 import store from "./redux/store";
-import NavBar from "./components/navbar/Navbar";
-import AddBook from "./components/addBook/AddBook";
-import { Outlet } from "react-router-dom";
-import ProtectedRoute from "./components/protectedRoute/ProtectedRoute";
+import { Outlet, useLocation } from "react-router-dom";
+import Navbar from './components/navbar/Navbar';
+import Login from './routes/login/Login';
+import ProtectedRoute from './routes/protectedRoute/ProtectedRoute';
+import SignUp from "./routes/signup/SignUp";
+import SingleBook from './routes/singleBook/SingleBook';
+import AddBook from './routes/addBook/AddBook';
+import EditBook from './routes/edit/EditBook';
+import Book from './routes/books/Book';
+import NotFound from '../src/NotFound';
+import MatchMaking from "./routes/matchMaking/MatchMaking";
 
+// Layout component that conditionally renders Navbar based on the route
 const Layout = () => {
-  const isAuthenticated = useSelector(state => state.auth.isAuthenticated); // Get isAuthenticated from Redux state
+  const location = useLocation();
+  const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
+
+  // Only render Navbar if user is authenticated and not on Login or SignUp page
+  const showNavbar = isAuthenticated && !['/', '/register'].includes(location.pathname);
+
   return (
     <>
-      {isAuthenticated && <NavBar />} {/* Render NavBar only if user is authenticated */}
+      {showNavbar && <Navbar />}
       <Outlet />
     </>
   );
 };
 
 const router = createBrowserRouter([
+  {
+    path: "/register",
+    element: <SignUp />
+  },
   {
     path: "/",
     element: <Layout />,
@@ -33,7 +46,10 @@ const router = createBrowserRouter([
         path: "books/:id",
         element: <ProtectedRoute><SingleBook /></ProtectedRoute>
       },
-      { path: "/", element: <Login /> },
+      {
+        path: "/",
+        element: <Login />
+      },
       {
         path: "/addbook",
         element: <ProtectedRoute><AddBook /></ProtectedRoute>
@@ -43,11 +59,17 @@ const router = createBrowserRouter([
         element: <ProtectedRoute><EditBook /></ProtectedRoute>
       },
       {
-        path: "/books", element: <ProtectedRoute>
-          <Book />
-        </ProtectedRoute>
+        path: "/books",
+        element: <ProtectedRoute><Book /></ProtectedRoute>
       },
-      { path: "*", element: <NotFound /> },
+      {
+        path: "/matchmaking",
+        element: <ProtectedRoute><MatchMaking /></ProtectedRoute>
+      },
+      {
+        path: "*",
+        element: <NotFound />
+      },
     ],
   },
 ]);

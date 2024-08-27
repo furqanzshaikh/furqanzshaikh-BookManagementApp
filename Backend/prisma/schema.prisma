@@ -1,0 +1,36 @@
+datasource db {
+  provider = "postgresql" // or "mysql" or "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+model User {
+  id                Int              @id @default(autoincrement())
+  email             String           @unique
+  password          String
+  bookListings      BookListing[]
+  exchangeRequests  ExchangeRequest[] @relation("UserRequests") // No `fields` or `references` here
+}
+model BookListing {
+  id                Int              @id @default(autoincrement())
+  title             String           @unique
+  author            String
+  category          String
+  releaseYear       String           // Ensure this is String if you are sending a date as a string
+  imgUrl            String?          // optional
+  userId            Int
+  user              User             @relation(fields: [userId], references: [id])
+  exchangeRequests  ExchangeRequest[]
+}
+
+
+model ExchangeRequest {
+  id                Int              @id @default(autoincrement())
+  requesterId       Int
+  requester         User             @relation("UserRequests", fields: [requesterId], references: [id])
+  bookListingId     Int
+  bookListing       BookListing      @relation(fields: [bookListingId], references: [id])
+  status            String           @default("pending") // Add status field
+}

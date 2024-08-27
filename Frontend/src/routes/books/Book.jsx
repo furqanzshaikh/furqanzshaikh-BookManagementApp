@@ -13,7 +13,7 @@ import {
   FormControlLabel,
   Avatar,
 } from "@mui/material";
-import Loader from "../loader/Loader";
+import Loader from "../../components/loader/Loader";
 import { Link } from "react-router-dom";
 
 const Book = () => {
@@ -29,32 +29,29 @@ const Book = () => {
   const [anchorEl, setAnchorEl] = useState(null);
 
   const sortOption = useSelector(state => state.auth.sortOption);
-  const token = useSelector(state => state.auth.authToken); 
+  const token = localStorage.getItem('authToken'); 
+
   useEffect(() => {
     fetchData();
   }, []); 
 
   const fetchData = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/books", {
+      const response = await axios.get("http://localhost:3000/api/all-books", {
         headers: {
-          Authorization: `Bearer ${token}`, // Include the Bearer token in the Authorization header
+          Authorization: `Bearer ${token}`, 
         },
       });
+      
       if (Array.isArray(response.data.allBooks)) {
         setData(response.data.allBooks);
-        
       } else {
-        console.error("Data is not an array:", response.data);
-       
-        setData([]); // Set to an empty array if the data format is not as expected
+        setData([]); 
       }
       setLoading(false);
     } catch (error) {
       setError(error);
       setLoading(false);
-      console.error("Error fetching data:", error);
-     
     }
   };
 
@@ -75,36 +72,27 @@ const Book = () => {
   };
 
   const open = Boolean(anchorEl);
-
   const filteredBooks = Array.isArray(data) ? data.filter((book) => {
-    if (
-      !filters.novel &&
-      !filters.science_fiction &&
-      !filters.thriller &&
-      !filters.motivational
-    ) {
+    const category = book.category.toLowerCase();
+    const filtersLower = {
+      novel: filters.novel,
+      science_fiction: filters.science_fiction,
+      thriller: filters.thriller,
+      motivational: filters.motivational
+    };
+
+    if (Object.values(filtersLower).every(filter => !filter)) {
       return true;
     }
-    if (filters.novel && book.category === "Novel") {
-      return true;
-    }
-    if (filters.science_fiction && book.category === "Science_Fiction") {
-      return true;
-    }
-    if (filters.thriller && book.category === "Thriller") {
-      return true;
-    }
-    if (filters.motivational && book.category === "Motivational") {
-      return true;
-    }
-    return false;
+
+    return filtersLower[category] || false;
   }) : [];
 
   const sortedBooks = Array.isArray(filteredBooks) ? [...filteredBooks].sort((a, b) => {
     if (sortOption === 'asc') {
-      return a.release_year - b.release_year;
+      return new Date(a.releaseYear) - new Date(b.releaseYear);
     } else if (sortOption === 'desc') {
-      return b.release_year - a.release_year;
+      return new Date(b.releaseYear) - new Date(a.releaseYear);
     }
     return 0;
   }) : [];
@@ -181,7 +169,7 @@ const Book = () => {
       <Grid container spacing={3}>
         {sortedBooks.length > 0 ? (
           sortedBooks.map((book) => (
-            <Grid item key={book._id} xs={12} sm={6} md={4} lg={4}>
+            <Grid item key={book.id} xs={12} sm={6} md={4} lg={4}>
               <Card
                 sx={{
                   height: "100%",
@@ -200,24 +188,24 @@ const Book = () => {
                       borderRadius: 0,
                       margin: '1vw auto',
                     }} 
-                    src={book.cover_photo} 
+                    src={book.imgUrl} 
                     alt="book_cover" 
                     loading="lazy"
                   />
                   <Typography variant="h5" textAlign={'center'} component="p" gutterBottom>
-                    {book.book_name}
+                    {book.title}
                   </Typography>
                   <Typography variant="h6" textAlign={'center'} color="textSecondary" gutterBottom>
                     Author: {book.author}
                   </Typography>
                   <Typography variant="body1" textAlign={'center'} component="p" gutterBottom>
-                    Year: {book.release_year}
+                    Year: {new Date(book.releaseYear).getFullYear()}
                   </Typography>
                   <Typography variant="body1" textAlign={'center'} component="p" gutterBottom>
                     Category: {book.category}
                   </Typography>
                 </CardContent>
-                <Link style={{ width: '90%', margin: '0 auto', padding: '1rem' }} to={`/books/${book._id}`}>
+                <Link style={{ width: '90%', margin: '0 auto', padding: '1rem' }} to={`/books/${book.id}`}>
                   <Button
                     variant="outlined"
                     color="inherit"
